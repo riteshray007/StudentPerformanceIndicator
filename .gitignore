@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 
 # raw data
+catboost_info/
 
 # C extensions
 *.so
