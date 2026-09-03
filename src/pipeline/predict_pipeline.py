@@ -3,6 +3,7 @@ import pandas as pd
 from src.exception import CustomException
 from src.logger import logging
 from src.utils import load_object
+from pathlib import Path
 
 class PredictPipeline:
       def __init__(self):
@@ -10,8 +11,10 @@ class PredictPipeline:
       
       def predict(self,features):
             try:
-                  model_path='artifacts\model.pkl'
-                  preprocessor_path='artifacts\preprocessor.pkl'
+                  # model_path='artifacts\model.pkl'
+                  model_path=Path("artifacts") / "model.pkl"
+                  # preprocessor_path='artifacts\preprocessor.pkl'
+                  preprocessor_path = Path("artifacts") / "preprocessor.pkl"
                   model = load_object(model_path)
                   preprocessor = load_object(preprocessor_path)
                   scaled_data = preprocessor.transform(features)
