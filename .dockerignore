@@ -1,0 +1,12 @@
+.git
+.github
+.vscode
+__pycache__
+*.pyc
+*.pyo
+.ipynb_checkpoints
+notebook
+venv
+.venv
+env
+.env
