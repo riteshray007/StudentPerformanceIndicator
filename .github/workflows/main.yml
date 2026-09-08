@@ -70,6 +70,7 @@ jobs:
           
   Continuous-Deployment:
     name: Continuous Deployment
+    environment: aws_student_performance
     needs: build-and-push-ecr-image
     runs-on: self-hosted
 
