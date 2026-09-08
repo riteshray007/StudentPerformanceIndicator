@@ -39,6 +39,7 @@ jobs:
 
   build-and-push-ecr-image:
     name: Continuous Delivery
+    environment: aws_student_performance
     needs: integration
     runs-on: ubuntu-latest
 
@@ -66,3 +67,49 @@ jobs:
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          
+  Continuous-Deployment:
+    name: Continuous Deployment
+    needs: build-and-push-ecr-image
+    runs-on: self-hosted
+
+    steps:
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Pull latest image
+        run: |
+          docker pull ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
+
+      - name: Stop old container
+        run: |
+          docker stop student-performance-container || true
+          docker rm student-performance-container || true
+
+      - name: Run new container
+        run: |
+          docker run -d \
+            -p 5000:5000 \
+            --name student-performance-container \
+            ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
+
+      - name: Test application
+        run: |
+          sleep 5
+          curl --fail http://localhost:5000
+
+      - name: Clean unused Docker resources
+        run: |
+          docker system prune -f
